@@ -33,7 +33,8 @@ def main():
     app.run(host='0.0.0.0', port=80)
 
 # Open door
-def open_door(door_message, motion):
+def open_door():
+    global door_message, motion
 
     if door_message == "door is closed" or door_message == "are you sure?":
         GPIO.output(relay_pin_cw, GPIO.HIGH)   # activate the relay, powering motor
@@ -45,7 +46,8 @@ def open_door(door_message, motion):
     return door_message
 
 # Close door
-def close_door(door_message, motion):
+def close_door():
+    global door_message, motion
 
     if door_message == "door is open" or door_message == "are you sure?":
         GPIO.output(relay_pin_ccw, GPIO.HIGH)   # activate the relay, powering motor
@@ -57,6 +59,7 @@ def close_door(door_message, motion):
     return door_message
 
 def update_shared_variables(new_motion):
+    global motion
     motion = new_motion
     return motion
 
