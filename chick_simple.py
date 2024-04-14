@@ -1,8 +1,9 @@
+#!/usr/bin/python3.9
+
 import RPi.GPIO as GPIO
 import time
 from datetime import datetime
 from flask import Flask, render_template, request
-import threading
 
 # Pins
 # Raspberry Pi Zero W, pin notes are for SD card slot facing up and at the top
@@ -12,9 +13,6 @@ relay_pin_ccw = 18      # signal pin to relay for DC- (counter clockwise); R6
 
 # Setup web-page and functions
 app = Flask(__name__)
-
-# Lock to protect open/close time updates
-variable_lock = threading.Lock()
 
 # Default open and close times
 motion = 10        # Seconds for motor motion
@@ -30,11 +28,6 @@ def main():
     GPIO.output(relay_pin_cw, GPIO.LOW)	# relay_pin_cw set as output with initial state of LOW
     GPIO.setup(relay_pin_ccw, GPIO.OUT)
     GPIO.output(relay_pin_ccw, GPIO.LOW)	# relay_pin_ccw set as output with initial state of LOW
-
-    # Create thread for scheduled door control
-    door_control_thread = threading.Thread(target=check_and_control_door)
-    door_control_thread.daemon = True  # The thread will exit when the main program exits
-    door_control_thread.start()
 
     # Start web-server
     app.run(host='0.0.0.0', port=80)
@@ -53,7 +46,6 @@ def open_door(door_message, motion):
 
 # Close door
 def close_door(door_message, motion):
-    global door_message, motion
 
     if door_message == "door is open" or door_message == "are you sure?":
         GPIO.output(relay_pin_ccw, GPIO.HIGH)   # activate the relay, powering motor
@@ -64,11 +56,8 @@ def close_door(door_message, motion):
         door_message = "are you sure?"
     return door_message
 
-# Update shared variables safely
 def update_shared_variables(new_motion):
-
-    with variable_lock:
-        motion = new_motion
+    motion = new_motion
     return motion
 
 # Home page
@@ -81,8 +70,8 @@ def index():
 # Call open_door()
 @app.route('/open', methods=['GET', 'POST'])
 def open_the_door():
+    global door_message, motion
     # Code to open the chicken coop door
-    global door_message
     if request.method == 'POST':
         open_door()
         return f'''Door should be open
@@ -95,7 +84,7 @@ def open_the_door():
 @app.route('/close', methods=['GET', 'POST'])
 def close_the_door():
     # Code to close the chicken coop door
-    global door_message
+    global door_message, motion
     if request.method == 'POST':
         close_door()
         return f'''Door should be closed

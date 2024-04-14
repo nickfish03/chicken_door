@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chicken Coop Door Control</title>
+    <style>
+        body { font-family: sans-serif; }
+        button { font-size: 18px; padding: 10px 20px; margin: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Chicken Coop Door</h1>
+
+    <p>Current Status: {{ door_message }}</p>
+
+    <form action="/open" method="POST">
+        <button type="submit">Open Door</button>
+    </form>
+
+    <form action="/close" method="POST">
+        <button type="submit">Close Door</button>
+    </form>
+
+    <h2>Motion Time</h2>
+    <form action="/save" method="POST">
+        <input type="number" name="time_motion" value="{{ motion }}"> seconds
+        <button type="submit">Save</button>
+    </form>
+</body>
+</html>
