@@ -1,0 +1,4 @@
+@reboot /usr/bin/bash -c 'nohup sudo /usr/bin/python3 /home/pi/git/chicken_door/chick_simple.py >/dev/null 2>&1 &'  
+
+*/5 * * * * ping -q -c1 8.8.8.8 > /dev/null || /sbin/reboot 
+
