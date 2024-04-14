@@ -17,10 +17,6 @@ app = Flask(__name__)
 variable_lock = threading.Lock()
 
 # Default open and close times
-open_hour = 7     # Default opening hour
-open_minute = 0   # Default opening minute
-close_hour = 20   # Default closing hour
-close_minute = 0  # Default closing minute
 motion = 10        # Seconds for motor motion
 
 # Default door_message
@@ -68,36 +64,17 @@ def close_door(door_message, motion):
         door_message = "are you sure?"
     return door_message
 
-# Check and open/close the door based on time
-def check_and_control_door(door_message, motion):
-
-    while True:
-        current_time = datetime.now().time()
-        if current_time.hour == open_hour and current_time.minute == open_minute:
-            open_door(door_message, motion)
-        elif current_time.hour == close_hour and current_time.minute == close_minute:
-            close_door(door_message, motion)
-        time.sleep(60)  # Check every minute
-
 # Update shared variables safely
-def update_shared_variables(new_open_hour, new_open_minute, new_close_hour, new_close_minute, new_motion):
+def update_shared_variables(new_motion):
 
     with variable_lock:
-        open_hour = new_open_hour
-        open_minute = new_open_minute
-        close_hour = new_close_hour
-        close_minute = new_close_minute
         motion = new_motion
-    return open_hour, open_minute, close_hour, close_minute, motion
+    return motion
 
 # Home page
 @app.route('/')
 def index():
     return render_template('index.html',
-                            open_hour=open_hour,
-                            open_minute=open_minute,
-                            close_hour=close_hour,
-                            close_minute=close_minute,
                             motion=motion,
                             door_message=door_message)
 
@@ -130,17 +107,9 @@ def close_the_door():
 # Update scheduled times with text box input
 @app.route('/save', methods=['POST'])
 def save_times():
-    new_open_hour = int(request.form['time_open'].split(':')[0])
-    new_open_minute = int(request.form['time_open'].split(':')[1])
-    new_close_hour = int(request.form['time_close'].split(':')[0])
-    new_close_minute = int(request.form['time_close'].split(':')[1])
     new_motion = int(request.form['time_motion'])
-    update_shared_variables(new_open_hour, new_open_minute, new_close_hour, new_close_minute, new_motion)
+    update_shared_variables(new_motion)
     return render_template('index.html',
-                            open_hour=open_hour,
-                            open_minute=open_minute,
-                            close_hour=close_hour,
-                            close_minute=close_minute,
                             motion=motion)
 
 if __name__ == "__main__":
